@@ -1,6 +1,6 @@
 How  ot load page html data to variable
 
-which=1 // 1 หมายถึงลำดับ table ใน code html
+which=1 // 1 หมายถึงลำดับ table ในโค๊ต html
 
 ```{r}
 airline = "http://www.theacsi.org/index.php?option=com_content&view=article&id=147&catid=&Itemid=212&i=Airlines"

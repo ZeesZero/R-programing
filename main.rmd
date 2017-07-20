@@ -193,9 +193,42 @@ aggregate(birthwt.grams ~ mother.smokes,FUN = mean,data = birthwt)
 
 ลองหาค่า t-test//p-value คือค่าที่แสดงถึงการมีนัยสำคัญ//ยิ่งน้อยยิ่งดี โดยทั่วไปค่าความเชื่อมั่นอยู่ที่ 95%(หรือ 0.95) หรือ 99%(หรือ 0.99) แสดงว่าถ้าค่า 0.007003 แสดงว่าไม่ถึง 0.01 สำหรับการตั้งค่าความเชื่อมั่นที่ 99%(0.99)
 จากตัวอย่าง แม่สูบบุหรี่ส่งผลต่อน้ำหนักเด็กแรกเกิด? p-value = 0.007003 แสดงว่ามีนัยสำคัญ แต่ต้องลองดูความสัมพันธ์กับตัวอื่นด้วย
-t-test ใช้กับการหาค่าแค่ 2 กลุ่ม
+t-test ใช้กับการหาค่าแค่ 2 กลุ่มคำตอบ...เช่นเพศ(ชาย,หญิง)
 ```{r}
 birthwt.t.test<-t.test(birthwt.grams ~ mother.smokes,data = birthwt)
 birthwt.t.test
+```
+
+ลองหาค่า anova//Pr(>F) เหมือน p-value ใน t-test
+```{r}
+#plot(aov.birthwt)
+#aov.birthwt
+aov.birthwt<-aov(birthwt.grams ~ race, data=birthwt)
+summary(aov.birthwt)
+plot(aov.birthwt)
+```
+
+```{r}
+aov.birthwt<-aov(birthwt.grams ~ phys.visit.binned, data=birthwt)
+summary(aov.birthwt)
+plot(aov.birthwt)
+```
+
+new test t-test ใช้ t-test เพราะ origin มีแค่ non-USA,USA 2ค่าเท่านั้น
+```{r}
+mpg.t.test <- t.test(MPG.highway ~ Origin, data = Cars93, conf.level=0.9)
+mpg.t.test
+```
+
+เช็คว่ามีความเชื่อมั่นแค่ไหน
+```{r}
+car93.t.test<-with(Cars93, t.test(x=MPG.highway[Origin=="USA"],y=MPG.highway[Origin=="non-USA"]))
+car93.t.test$p.value
+#car93.t.test
+```
+
+```{r}
+car93.wilcox.test <- wilcox.test(MPG.highway ~ Origin, data = Cars93)
+car93.wilcox.test
 ```
 
