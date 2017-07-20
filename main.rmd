@@ -100,7 +100,7 @@ surf3D(x= (R+r*cos(alpha))*cos(beta),
        main="example Data 3d")
 ```
 
-test data diamons
+test data diamons (***fail***)
 ```{r}
 par(mar=c(2,2,2,2))
 par(mfrow=c(1,1))
@@ -118,5 +118,84 @@ surf3D(x= (R+r*cos(alpha))*cos(beta),
        colkey=FALSE, 
        bty="b2", 
        main="example Data 3d")
+```
+
+How to create function
+```{r}
+calculategrade <- function(x){
+  if (x>=90){
+    grade<-"A"
+  }else if (x>=80){
+    grade<-"B"
+  }else if (x>=70){
+    grade<-"C"
+  }else{
+    grade<-"F"
+  }
+  grade
+}
+
+```
+
+How to loop
+```{r}
+for(i in 1:4){
+  print(i)
+}
+```
+
+sample loop
+```{r}
+course.grade <- c(92,85,72,63)
+for(i in dim(course.grade)[1]){
+  calculategrade(course.grade[i])
+}
+```
+
+```{r}
+mydatatest<-matrix( nrow = 9, ncol = 9)
+for(i in 1:dim(mydatatest)[1]){
+  for(j in 1:dim(mydatatest)[2]){
+    mydatatest[i,j]=i*j
+  }
+}
+print(mydatatest)
+```
+
+```{r}
+myarray <- array(1:24,dim = c(3,4,2))
+
+for(i in 1:dim(myarray)[1]){
+  for(j in 1:dim(myarray)[2]){
+    for(k in 1:dim(myarray)[3]){
+      myarray[i,j,k]<-i*j*k
+    }
+  }
+}
+myarray
+```
+
+test data
+```{r}
+View(Cars93)
+table(Cars93$Origin, Cars93$DriveTrain)
+```
+
+test mean
+```{r}
+tapply(Cars93$MPG.city, INDEX = Cars93[c("Origin","DriveTrain")],FUN = mean)
+```
+
+ลองหาความสำพันธ์ระหว่าง แม่สูบบุหรี่ส่งผลต่อน้ำหนักเด็กแรกเกิด?
+```{r}
+aggregate(birthwt.grams ~ mother.smokes,FUN = mean,data = birthwt)
+```
+
+ลองหาค่า t-test//p-value คือค่าที่แสดงถึงการมีนัยสำคัญ//ยิ่งน้อยยิ่งดี โดยทั่วไปค่าความเชื่อมั่นอยู่ที่ 95%(หรือ 0.95) หรือ 99%(หรือ 0.99) แสดงว่าถ้าค่า 0.007003 แสดงว่าไม่ถึง 0.01 สำหรับการตั้งค่าความเชื่อมั่นที่ 99%(0.99)
+จากตัวอย่าง แม่สูบบุหรี่ส่งผลต่อน้ำหนักเด็กแรกเกิด? p-value = 0.007003 แสดงว่ามีนัยสำคัญ แต่ต้องลองดูความสัมพันธ์กับตัวอื่นด้วย
+t-test ใช้กับการหาค่าแค่ 2 กลุ่ม
+```{r}
+birthwt.t.test<-t.test(birthwt.grams ~ mother.smokes,data = birthwt)
+birthwt.t.test
 ```
 
