@@ -232,3 +232,222 @@ car93.wilcox.test <- wilcox.test(MPG.highway ~ Origin, data = Cars93)
 car93.wilcox.test
 ```
 
+day 3
+https://github.com/vkrit/r-programming/blob/master/workshop9_solution.Rmd
+
+
+```{r}
+library(MASS)
+library(ggplot2)
+library(plot3D)
+library(plyr)
+library(ggplot2)
+```
+
+```{r}
+# Rename the columns to have more descriptive names
+colnames(birthwt) <- c("birthwt.below.2500", "mother.age", "mother.weight", 
+    "race", "mother.smokes", "previous.prem.labor", "hypertension", "uterine.irr", 
+    "physician.visits", "birthwt.grams")
+
+# Transform variables to factors with descriptive levels
+birthwt <- transform(birthwt, 
+            race = as.factor(mapvalues(race, c(1, 2, 3), 
+                              c("white","black", "other"))),
+            mother.smokes = as.factor(mapvalues(mother.smokes, 
+                              c(0,1), c("no", "yes"))),
+            hypertension = as.factor(mapvalues(hypertension, 
+                              c(0,1), c("no", "yes"))),
+            uterine.irr = as.factor(mapvalues(uterine.irr, 
+                              c(0,1), c("no", "yes")))
+            )
+```
+T-test
+```{r}
+birthwt.t.test <- t.test(birthwt.grams ~ mother.smokes, data = birthwt)
+```
+
+
+ANOVA with birthwt data
+```{r}
+phys.visit.binned <- birthwt$physician.visits
+phys.visit.binned[phys.visit.binned >= 3] <- "3.or.more"
+birthwt <- transform(birthwt, phys.visit.binned = as.factor(phys.visit.binned))
+
+birthwt$phys.visit.binned
+```
+
+```{r}
+aov.birthwt <- aov(birthwt.grams ~ phys.visit.binned, data = birthwt)
+summary(aov.birthwt, conf.level=0.9)
+plot(aov.birthwt)
+```
+
+```{r}
+aov.birthwt <- aov(birthwt.grams ~ race, data = birthwt)
+summary(aov.birthwt, conf.level=0.9)
+plot(aov.birthwt)
+```
+
+เอาทฤษฎีมาวิเคราะห์ค่า ซึ่งตัวนี้ใช้ Tukey multiple comparisons
+```{r}
+posthoc <- TukeyHSD(x=aov.birthwt, 'phys.visit.binned', conf.level=0.95)
+posthoc
+plot(posthoc)
+```
+
+Run a linear regression
+https://github.com/vkrit/r-programming/blob/master/workshop10_solution.Rmd
+
+ถ้ายิ่งใส่ตัวแปรต้นหลายตัวยิ่งดี ตัวแปรตามคือน้ำหนักเด็กแรกเกิด(birthwt.grams)
+```{r}
+# Run regression model
+birthwt.lm <- lm(birthwt.grams ~ mother.smokes + race + mother.weight + hypertension + mother.age, data = birthwt)
+
+# Output coefficients table
+summary(birthwt.lm)
+plot(birthwt.lm)
+```
+
+```{r}
+coef(birthwt.lm)["mother.age"]
+
+age.coef <- round(coef(birthwt.lm)["mother.age"], 1)
+```
+
+```{r}
+library(ggplot2)
+
+# Note fullrange = TRUE is used here to extend the 'mother.smokes = yes' line beyond the maximum age (35) in this group
+qplot(data = birthwt, x = mother.age, y = birthwt.grams, colour = mother.smokes) + stat_smooth(method = "lm", fullrange = TRUE)
+birthwt.lm$model
+```
+
+next solution
+```{r}
+View(Cars93)
+```
+
+การขึ้น อัตราการกินน้ำมัน MPG.highway มีความสัมพันธ์กับ น้ำหนัก แรงม้า รอบ ขนาดของเครื่องยนต์?
+```{r}
+car93.lm <- lm(MPG.highway ~ Weight + Horsepower + RPM + EngineSize, data = Cars93)
+summary(car93.lm)
+plot(car93.lm)
+```
+
+```{r}
+qplot(data = Cars93, x = EngineSize, y = MPG.highway, colour = Weight) + geom_smooth(method ="lm")
+car93.lm$model
+```
+
+```{r}
+qplot(data = Cars93, x = EngineSize, y = MPG.highway, colour = Origin) + stat_smooth(method = "lm", fullrange = TRUE)
+```
+
+show model
+```{r}
+birthwt.lm$model
+```
+
+```{r}
+cols_birthwt<-c('birthwt.below.2500','race','mother.smokes','hypertension','uterine.irr')
+cols_birthwt
+```
+
+```{r}
+birthwt[cols_birthwt] <- lapply(birthwt[cols_birthwt],as.factor)
+
+```
+
+```{r}
+set.seed(1)
+train <- sample(1:nrow(birthwt), 0.75*nrow(birthwt))
+```
+
+```{r}
+library(rpart)
+birthwtTree <- rpart(birthwt.below.2500 ~ . - birthwt.grams, data = birthwt[train,],method = 'class')
+plot(birthwtTree)
+text(birthwtTree,pretty=0)
+```
+
+
+```{r}
+birthwtPred <- predict(birthwtTree, birthwt[-train,],type='class')
+table(birthwtPred, birthwt[-train,]$birthwt.below.2500)
+```
+
+```{r}
+pd <- predict(birthwt.lm,birthwt[2,], level =0.99)
+str(pd)
+pd
+```
+
+```{r}
+pd <- predict(birthwt.lm,birthwt[3,], level =0.99)
+str(pd)
+pd
+```
+
+
+read input.json
+```{r}
+install.packages("rjson")
+library(rjson)
+```
+ถ้าจะอ่านภาษาไทยต้อง sys.setlocale("LC_CTYPE","thai")
+```{r}
+#sys.setlocale("LC_CTYPE","thai")
+Sys.setlocale(category = "LC_ALL","thai")
+rjson.file <- fromJSON(file="input.json")
+View(rjson.file)
+#company.file <- fromJSON(file = "companies.json")
+#View(company.file)
+```
+
+load webpage data
+```{r}
+install.packages(c("XML", "xml2", "rvest","htmltools"))
+```
+
+```{r}
+library(XML)
+library(xml2)
+library(htmltools)
+library(rvest)
+```
+
+
+```{r}
+#imdb.url <- html("http://www.imdb.com/title/tt1490017/")
+imdb.url <- read_html("http://www.imdb.com/title/tt4116284/")
+```
+
+```{r}
+imdb.url %>%
+  html_node("strong span") %>%
+  html_text()%>%
+  as.numeric()
+```
+
+```{r}
+imdb.url %>%
+  html_node("#titleCast .itemprop span") %>%
+  html_text()
+```
+
+```{r}
+library(httr)
+library(XML)
+library(xml2)
+library(RCurl)
+library(rvest)
+library(htmltools)
+library(data.table)
+library(bitops)
+#library(Rcurl)
+test.movie <- read_html("http://www.imdb.com/title/tt4116284/")
+#test.movie.tabel <- data.table(test.movie)
+test.movie.tabel <- readHTMLTable("http://www.imdb.com/title/tt4116284/")
+```
+
